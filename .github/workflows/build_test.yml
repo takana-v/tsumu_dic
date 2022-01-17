@@ -9,14 +9,14 @@ on:
   workflow_dispatch:
 
 env:
-  PYTHON_VERSION: "3.8.10"
+  PYTHON_VERSION: '3.8.10'
 
 jobs:
   openjtalk_build:
     strategy:
       matrix:
         include:
-          os: ubuntu-latest
+        - os: ubuntu-latest
           pip_cache_path:  ~/.cache/pip
           python_architecture: "x64"
 
@@ -35,7 +35,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ matrix.pip_cache_path }}
-          key: ${{ runner.os }}-pip-${{ hashFiles("**/requirements.txt") }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
