@@ -1,0 +1,51 @@
+name: build_test
+on:
+  push:
+    branches:
+      - master
+    release:
+      types:
+        - created
+    workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.8.10"
+
+jobs:
+  openjtalk_build:
+    strategy:
+      matrix:
+        include:
+          os: ubuntu-latest
+          pip_cache_path:  ~/.cache/pip
+          python_architecture: "x64"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: ${{ matrix.python_architecture }}
+
+      - name: Prepare Python dependencies cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.pip_cache_path }}
+          key: ${{ runner.os }}-pip-${{ hashFiles("**/requirements.txt") }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+
+      - name: Build OpenJTalk Dict
+        shell: bash
+        run: |
+          python test_pyopenjtalk_build.py
