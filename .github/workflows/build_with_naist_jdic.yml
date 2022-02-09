@@ -51,6 +51,7 @@ jobs:
           mv build/_left-id.def build/left-id.def
           mv build/_pos-id.def build/pos-id.def
           mv build/_rewrite.def build/rewrite.def
+          mv build/_right-id.def build/right-id.def
 
           cat <<EOF > build/dicrc
           ;from mecab-naist-jdic-0.6.3b-20111013
