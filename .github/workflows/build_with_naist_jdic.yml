@@ -1,0 +1,137 @@
+name: build_with_naist_jdic
+on:
+  push:
+    branches:
+      - master
+  release:
+    types:
+      - created
+  workflow_dispatch:
+
+jobs:
+  openjtalk_build:
+    strategy:
+      matrix:
+        build_option: ['all']
+        include:
+        - build_option: 'all'
+          artifact_name: tsumu_dic_all_with_naist_jdic
+          open_jtalk_commit_hash: '427cfd761b78efb6094bea3c5bb8c968f0d711ab'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare Open Jtalk cache
+        uses: actions/cache@v2
+        id: open-jtalk-cache
+        with:
+          key: open-jtalk-cache-${{ matrix.open_jtalk_commit_hash }}
+          path: open_jtalk
+
+      - name: Clone Open JTalk
+        if: steps.open-jtalk-cache.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with: 
+          repository: takana-v/open_jtalk
+          ref: ${{ matrix.open_jtalk_commit_hash }}
+          path: open_jtalk
+
+      - name: Install mecab-utils
+        shell: bash
+        run: |
+          sudo apt update
+          sudo apt install -y mecab-utils
+
+      - name: Prepare dictionary of Open JTalk
+        shell: bash
+        run: |
+          mkdir build
+          cp open_jtalk/src/mecab-naist-jdic/* build
+          mv build/_left-id.def build/left-id.def
+          mv build/_pos-id.def build/pos-id.def
+          mv build/_rewrite.def build/rewrite.def
+
+          cat <<EOF > build/dicrc
+          ;from mecab-naist-jdic-0.6.3b-20111013
+          ;https://ja.osdn.net/projects/naist-jdic/downloads/53500/mecab-naist-jdic-0.6.3b-20111013.tar.gz/
+          ;
+          ;Copyright (c) 2009, Nara Institute of Science and Technology, Japan.
+          ;
+          ;All rights reserved.
+          ;
+          ;Redistribution and use in source and binary forms, with or without
+          ;modification, are permitted provided that the following conditions are
+          ;met:
+          ;
+          ;Redistributions of source code must retain the above copyright notice,
+          ;this list of conditions and the following disclaimer.
+          ;Redistributions in binary form must reproduce the above copyright
+          ;notice, this list of conditions and the following disclaimer in the
+          ;documentation and/or other materials provided with the distribution.
+          ;Neither the name of the Nara Institute of Science and Technology
+          ;(NAIST) nor the names of its contributors may be used to endorse or
+          ;promote products derived from this software without specific prior
+          ;written permission.
+          ;
+          ;THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+          ;"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+          ;LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+          ;A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+          ;CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+          ;EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+          ;PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+          ;PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+          ;LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+          ;NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+          ;SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+          ;
+          ;
+          ; Configuration file of NAIST Japanese Dictionary
+          ;
+          
+          cost-factor = 800
+          bos-feature = BOS/EOS,*,*,*,*,*,*,*,*
+          eval-size = 8
+          unk-eval-size = 4
+          config-charset = EUC-JP
+          
+          ; yomi
+          node-format-yomi = %pS%f[7]
+          unk-format-yomi = %M
+          eos-format-yomi  = \n
+          
+          ; simple
+          node-format-simple = %m\t%F-[0,1,2,3]\n
+          eos-format-simple  = EOS\n
+          
+          ; ChaSen
+          node-format-chasen = %m\t%f[7]\t%f[6]\t%F-[0,1,2,3]\t%f[4]\t%f[5]\n
+          unk-format-chasen  = %m\t%m\t%m\t%F-[0,1,2,3]\t\t\n
+          eos-format-chasen  = EOS\n
+          
+          ; ChaSen (include spaces)
+          node-format-chasen2 = %M\t%f[7]\t%f[6]\t%F-[0,1,2,3]\t%f[4]\t%f[5]\n
+          unk-format-chasen2  = %M\t%m\t%m\t%F-[0,1,2,3]\t\t\n
+          eos-format-chasen2  = EOS\n
+          EOF
+
+      - name: Prepare all csv files
+        shell: bash
+        run: find dict -name "*.csv" -exec cp {} build/ \;
+
+      - name: Build dictionary
+        shell: bash
+        working-directory: build
+        run: |
+          /usr/lib/mecab/mecab-dict-index -d . -o . -f UTF-8 -t UTF-8
+
+      - name: Remove unnecessary files
+        shell: bash
+        working-directory: build
+        run: rm .cvsignore Makefile.am Makefile.mak char.def feature.def matrix.def unk.def *.csv
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: build
