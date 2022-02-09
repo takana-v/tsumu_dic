@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  openjtalk_build:
+  build_dictionary:
     strategy:
       matrix:
         build_option: ['all']
