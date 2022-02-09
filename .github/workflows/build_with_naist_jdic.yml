@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_dictionary:
+  build_system_dictionary:
     strategy:
       matrix:
         build_option: ['all']
@@ -152,16 +152,16 @@ jobs:
       - name: Remove unnecessary files
         shell: bash
         working-directory: build
-        run: rm Makefile.am Makefile.mak char.def feature.def matrix.def unk.def *.csv
+        run: rm Makefile.am Makefile.mak char.def feature.def matrix.def unk.def dicrc *.csv
 
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.artifact_name }}
           path: build
 
-  upload-to-release:
+  upload_to_release:
     if: github.event.release.tag_name != ''
-    needs: [build_dictionary]
+    needs: [build_system_dictionary]
     runs-on: ubuntu-latest
     strategy:
       matrix:
