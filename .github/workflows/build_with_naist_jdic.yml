@@ -158,3 +158,40 @@ jobs:
         with:
           name: ${{ matrix.artifact_name }}
           path: build
+
+  upload-to-release:
+    if: github.event.release.tag_name != ''
+    needs: [build_dictionary]
+    runs-on: ubuntu-latest
+    strategy:
+      artifact_name:
+        - tsumu_dic_all_with_naist_jdic
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install 7zip
+        shell: bash
+        run: |
+          sudo apt update
+          sudo apt install -y p7zip-full
+
+      - name: Download and extract artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_name }}/
+
+      - name: Rearchive artifact
+        shell: bash
+        run: |
+          zip -r ${{ matrix.artifact_name }}.zip ${{ matrix.artifact_name }}/
+          tar -zcvf ${{ matrix.artifact_name }}.tar.gz ${{ matrix.artifact_name }}/
+
+      - name: Upload to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          file_glob: true
+          file: ${{ matrix.artifact_name }}.*
