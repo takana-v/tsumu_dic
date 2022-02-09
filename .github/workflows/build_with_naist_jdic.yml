@@ -130,7 +130,7 @@ jobs:
       - name: Remove unnecessary files
         shell: bash
         working-directory: build
-        run: rm .cvsignore Makefile.am Makefile.mak char.def feature.def matrix.def unk.def *.csv
+        run: rm Makefile.am Makefile.mak char.def feature.def matrix.def unk.def *.csv
 
       - uses: actions/upload-artifact@v2
         with:
