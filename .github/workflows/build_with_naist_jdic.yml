@@ -22,15 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Prepare Open Jtalk cache
-        uses: actions/cache@v2
-        id: open-jtalk-cache
-        with:
-          key: open-jtalk-cache-${{ matrix.open_jtalk_commit_hash }}
-          path: open_jtalk
-
       - name: Clone Open JTalk
-        if: steps.open-jtalk-cache.cache-hit != 'true'
         uses: actions/checkout@v2
         with: 
           repository: takana-v/open_jtalk
