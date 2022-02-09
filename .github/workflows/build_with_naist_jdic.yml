@@ -164,8 +164,9 @@ jobs:
     needs: [build_dictionary]
     runs-on: ubuntu-latest
     strategy:
-      artifact_name:
-        - tsumu_dic_all_with_naist_jdic
+      matrix:
+        artifact_name:
+          - tsumu_dic_all_with_naist_jdic
 
     steps:
       - uses: actions/checkout@v2
