@@ -8,19 +8,35 @@ on:
       - created
   workflow_dispatch:
 
+env:
+  PYTHON_VERSION: '3.8.10'
+  PYTHON_ARCH: "x64"
+
 jobs:
   build_system_dictionary:
     strategy:
       matrix:
-        build_option: ['all']
+        build_option: ['all', 'original']
         include:
         - build_option: 'all'
           artifact_name: tsumu_dic_all_with_naist_jdic
           open_jtalk_commit_hash: '427cfd761b78efb6094bea3c5bb8c968f0d711ab'
+          prepare_csv_arg: '--external_dir=english'
+        - build_option: 'original'
+          artifact_name: tsumu_dic_original_with_naist_jdic
+          open_jtalk_commit_hash: '427cfd761b78efb6094bea3c5bb8c968f0d711ab'
+          prepare_csv_arg: ''
+
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: ${{ env.PYTHON_ARCH }}
 
       - name: Clone Open JTalk
         uses: actions/checkout@v2
@@ -34,6 +50,10 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y mecab-utils
+      
+      - name: Prepare all csv files
+        shell: bash
+        run: python prepare_csv.py ${{ matrix.prepare_csv_arg }}
 
       - name: Prepare dictionary of Open JTalk
         shell: bash
@@ -108,16 +128,6 @@ jobs:
           unk-format-chasen2  = %M\t%m\t%m\t%F-[0,1,2,3]\t\t\n
           eos-format-chasen2  = EOS\n
           EOF
-
-      - name: Add tsumu_dic license
-        shell: bash
-        working-directory: build
-        run: |
-          cp ../LICENSE LICENSE
-
-      - name: Prepare all csv files
-        shell: bash
-        run: find dict -name "*.csv" -exec cp {} build/ \;
 
       - name: Build dictionary
         shell: bash
