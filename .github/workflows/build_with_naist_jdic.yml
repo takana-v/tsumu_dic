@@ -58,7 +58,6 @@ jobs:
       - name: Prepare dictionary of Open JTalk
         shell: bash
         run: |
-          mkdir build
           cp open_jtalk/src/mecab-naist-jdic/* build
           mv build/_left-id.def build/left-id.def
           mv build/_pos-id.def build/pos-id.def
