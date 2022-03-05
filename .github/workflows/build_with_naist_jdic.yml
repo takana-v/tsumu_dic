@@ -64,6 +64,15 @@ jobs:
           mv build/_rewrite.def build/rewrite.def
           mv build/_right-id.def build/right-id.def
 
+          cat <<EOF >> build/LICENSE
+          
+          ------
+          このdicファイルはnaist-jdic及びunidicのデータを含んでいます。
+          以下はnaist-jdic及びunidicのライセンス表記です。
+
+          EOF
+          cat build/COPYING >> build/LICENSE
+
           cat <<EOF > build/dicrc
           ;from mecab-naist-jdic-0.6.3b-20111013
           ;https://ja.osdn.net/projects/naist-jdic/downloads/53500/mecab-naist-jdic-0.6.3b-20111013.tar.gz/
@@ -137,7 +146,7 @@ jobs:
       - name: Remove unnecessary files
         shell: bash
         working-directory: build
-        run: rm Makefile.am Makefile.mak char.def feature.def matrix.def unk.def dicrc *.csv
+        run: rm Makefile.am Makefile.mak char.def feature.def matrix.def unk.def dicrc COPYING *.csv
 
       - uses: actions/upload-artifact@v2
         with:
