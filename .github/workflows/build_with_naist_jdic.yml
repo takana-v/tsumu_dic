@@ -21,7 +21,7 @@ jobs:
         - build_option: 'all'
           artifact_name: tsumu_dic_all_with_naist_jdic
           open_jtalk_commit_hash: '427cfd761b78efb6094bea3c5bb8c968f0d711ab'
-          prepare_csv_arg: '--external_dir=english'
+          prepare_csv_arg: '--external_dir=english --external_dir=manbyo'
         - build_option: 'original'
           artifact_name: tsumu_dic_original_with_naist_jdic
           open_jtalk_commit_hash: '427cfd761b78efb6094bea3c5bb8c968f0d711ab'
