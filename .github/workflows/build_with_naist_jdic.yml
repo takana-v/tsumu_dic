@@ -67,6 +67,7 @@ jobs:
           cat <<EOF >> build/LICENSE
           
           ------
+
           このdicファイルはnaist-jdic及びunidicのデータを含んでいます。
           以下はnaist-jdic及びunidicのライセンス表記です。
 
