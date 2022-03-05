@@ -161,6 +161,7 @@ jobs:
       matrix:
         artifact_name:
           - tsumu_dic_all_with_naist_jdic
+          - tsumu_dic_original_with_naist_jdic
 
     steps:
       - uses: actions/checkout@v2
